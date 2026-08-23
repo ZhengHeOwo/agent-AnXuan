@@ -15,10 +15,10 @@ type TextMatch struct {
 }
 
 const (
-	maxSearchFileBytes        = 8 << 20
-	internalSearchBufferBytes = 64 << 10
-	maxSearchLineBytes        = 256 << 10
-	maxMatchesPerFile         = 20
+	maxSearchFileBytes       = 8 << 20
+	initialSearchBufferBytes = 64 << 10
+	maxSearchLineBytes       = 256 << 10
+	maxMatchesPerFile        = 20
 )
 
 func (w *Workspace) searchTextFile(
@@ -70,6 +70,7 @@ func (w *Workspace) searchTextFile(
 			err,
 		)
 	}
+	defer file.Close()
 
 	info, err := file.Stat()
 	if err != nil {
@@ -93,7 +94,7 @@ func (w *Workspace) searchTextFile(
 
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(
-		make([]byte, internalSearchBufferBytes),
+		make([]byte, initialSearchBufferBytes),
 		maxSearchLineBytes,
 	)
 
