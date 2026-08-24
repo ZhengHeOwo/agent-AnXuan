@@ -10,9 +10,10 @@ import (
 )
 
 type TextMatch struct {
-	Path string
-	Line int
-	Text string
+	Path      string
+	Line      int
+	Text      string
+	Truncated bool
 }
 
 const (
@@ -31,10 +32,8 @@ func (w *Workspace) searchTextFile(
 		return nil, false, err
 	}
 
-	if strings.TrimSpace(query) == "" {
-		return nil, false, fmt.Errorf(
-			"search query must not be empty",
-		)
+	if err := validateSearchQuery(query); err != nil {
+		return nil, false, err
 	}
 
 	toolPath, err := validateToolPath(input)
@@ -119,10 +118,16 @@ func (w *Workspace) searchTextFile(
 			return matches, true, nil
 		}
 
+		text, textTruncated := makeMatchText(
+			line,
+			queryBytes,
+		)
+
 		matches = append(matches, TextMatch{
-			Path: toolPath,
-			Line: lineNumber,
-			Text: string(line),
+			Path:      toolPath,
+			Line:      lineNumber,
+			Text:      text,
+			Truncated: textTruncated,
 		})
 	}
 
@@ -158,6 +163,76 @@ const (
 	searchWorkerCount = 4
 	maxSearchMatches  = 100
 )
+
+const (
+	maxSearchQueryBytes     = 1 << 10
+	maxStoredMatchTextBytes = 2 << 10
+)
+
+func validateSearchQuery(query string) error {
+	if strings.TrimSpace(query) == "" {
+		return fmt.Errorf(
+			"search query must not be empty",
+		)
+	}
+
+	if len(query) > maxSearchQueryBytes {
+		return fmt.Errorf(
+			"search query exceeds byte limit: limit %d, actual %d",
+			maxSearchQueryBytes,
+			len(query),
+		)
+	}
+
+	return nil
+}
+
+func makeMatchText(
+	line []byte,
+	query []byte,
+) (string, bool) {
+	lineLength := len(line)
+	if lineLength <= maxStoredMatchTextBytes {
+		return string(line), false
+	}
+
+	matchStart := bytes.Index(line, query)
+	if matchStart < 0 {
+		return "", false
+	}
+
+	availableContent := maxStoredMatchTextBytes - len(query)
+	start := matchStart - availableContent/2
+
+	if start < 0 {
+		start = 0
+	}
+
+	end := start + maxStoredMatchTextBytes
+	if end > lineLength {
+		end = lineLength
+
+		start = end - maxStoredMatchTextBytes
+		if start < 0 {
+			start = 0
+		}
+	}
+
+	text := strings.ToValidUTF8(
+		string(line[start:end]),
+		"\uFFFD",
+	)
+
+	if start > 0 {
+		text = "..." + text
+	}
+
+	if end < lineLength {
+		text += "..."
+	}
+
+	return text, true
+}
 
 func (w *Workspace) searchTextWorker(
 	ctx context.Context,
@@ -210,10 +285,8 @@ func (w *Workspace) SearchText(
 		return TextSearchResult{}, err
 	}
 
-	if strings.TrimSpace(query) == "" {
-		return TextSearchResult{}, fmt.Errorf(
-			"search query must not be empty",
-		)
+	if err := validateSearchQuery(query); err != nil {
+		return TextSearchResult{}, err
 	}
 
 	fileList, err := w.ListTextFiles(ctx)
