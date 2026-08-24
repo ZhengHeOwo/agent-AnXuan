@@ -26,18 +26,21 @@ func NewListTextFilesTool(workspace *Workspace) (*ListTextFilesTool, error) {
 }
 
 var listTextFilesParameters = json.RawMessage(`{
-	"type": "object",
-	"properties": {},
-	 "additionalProperties": false
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
 }`)
 
 func (l *ListTextFilesTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "list_text_files",
-		Description: "Recursively list workspace-relative paths for supported regular text files " +
-			"in the controlled workspace. Use this tool to discover available files when the exact " +
-			"path is unknown or before reading, searching, or editing files. The result indicates " +
-			"whether the listing was truncated by safety limits.",
+		Description: "Recursively list supported regular text files in the controlled workspace. " +
+			"The workspace root and absolute filesystem location are intentionally hidden. Every " +
+			"returned value is a workspace-relative path using '/' separators, and nested files may " +
+			"appear as paths such as internal/config/config.go. Supported files include go.mod, go.sum, " +
+			"and files ending in .go, .md, .txt, .json, .yaml, .yml, or .toml. Symbolic links and " +
+			"non-regular files are excluded. If truncated is true, the listing is incomplete because " +
+			"a safety limit was reached; this tool currently has no pagination or continuation cursor.",
 		Parameters: listTextFilesParameters,
 	}
 }

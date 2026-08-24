@@ -40,28 +40,33 @@ type writeTextFileArguments struct {
 }
 
 var writeTextFileParameters = json.RawMessage(`{
-"type": "object",
-"properties": {
-"path":{
-"type": "string",
-"description": "Workspace-relative text file path using '/' separators, for example internal/config/config.go"
-},
-"content": {
-"type": "string",
-"description": "Complete text content to write to the file"
-	}
-},
-"required":["path", "content"],
-"additionalProperties": false
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Workspace-relative destination path using '/' separators, including nested paths such as internal/config/config.go. Do not use an absolute path."
+    },
+    "content": {
+      "type": "string",
+      "description": "The complete final text content for the file. Existing content is fully replaced after host-side user approval; this value is not a patch, diff, or append operation."
+    }
+  },
+  "required": ["path", "content"],
+  "additionalProperties": false
 }`)
 
 func (t *WriteTextFileTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "write_text_file",
-		Description: "Create or replace a supported regular text file in the controlled workspace " +
-			"using a workspace-relative path. Use this tool only when the user has requested a file " +
-			"change. The proposed path and complete content are shown for confirmation before any " +
-			"file modification is performed.",
+		Description: "Propose creating or completely replacing one supported regular text file in the " +
+			"controlled workspace. Provide a workspace-relative path using '/' separators; nested paths " +
+			"such as internal/config/config.go are supported, while absolute paths and symbolic-link " +
+			"paths are rejected. The content argument is the complete desired file content, not a patch " +
+			"or partial edit. Calling this tool does not bypass confirmation: after the call, the host " +
+			"application displays the proposed path and complete content to the user and waits for an " +
+			"explicit decision. The file is modified only if the host reports approval; rejection causes " +
+			"no filesystem change. Do not ask for a second confirmation immediately before calling this " +
+			"tool unless the user's intent to modify a file is itself unclear.",
 		Parameters: writeTextFileParameters,
 	}
 }

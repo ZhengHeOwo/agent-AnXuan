@@ -28,7 +28,7 @@ var searchTextParameters = json.RawMessage(`{
   "properties": {
     "query": {
       "type": "string",
-      "description": "Case-sensitive plain text to search for in supported workspace text files"
+      "description": "A non-empty, case-sensitive literal substring to find. Regular expressions, fuzzy matching, and case-insensitive matching are not supported. Use a specific query when a previous result was truncated."
     }
   },
   "required": ["query"],
@@ -38,11 +38,17 @@ var searchTextParameters = json.RawMessage(`{
 func (t *SearchTextTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "search_text",
-		Description: "Search supported regular text files in the controlled workspace " +
-			"for a case-sensitive plain-text substring. Use this tool to locate relevant " +
-			"files and line numbers when the exact file is unknown. Results contain " +
-			"workspace-relative paths, 1-based line numbers, and matching line text. " +
-			"The result indicates when search limits caused truncation.",
+		Description: "Recursively search supported regular text files throughout the controlled " +
+			"workspace for a case-sensitive literal substring. This is plain-text search, not regular-" +
+			"expression or fuzzy search. The hidden workspace root is never returned; all result paths " +
+			"are workspace-relative, use '/' separators, and may include nested directories. Each match " +
+			"contains a 1-based line number and either the complete matching line or a bounded snippet " +
+			"around the match. text_truncated indicates that an individual line was shortened. This tool " +
+			"does not return surrounding lines or total file line counts; call read_text_file when more " +
+			"context is required. Results are returned in stable file-path and line order. If the top-" +
+			"level truncated field is true, the overall result is incomplete because a file, listing, " +
+			"or match limit was reached. Pagination is not currently supported, so use a more specific " +
+			"query to narrow an incomplete result.",
 		Parameters: searchTextParameters,
 	}
 }
@@ -55,12 +61,12 @@ type searchTextMatchResponse struct {
 	Path          string `json:"path"`
 	Line          int    `json:"line"`
 	Text          string `json:"text"`
-	TextTruncated bool   `json:"texttruncated"`
+	TextTruncated bool   `json:"text_truncated"`
 }
 
 type searchTextResponse struct {
-	Matches   []searchTextMatchResponse
-	Truncated bool
+	Matches   []searchTextMatchResponse `json:"matches"`
+	Truncated bool                      `json:"truncated"`
 }
 
 func (t *SearchTextTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {

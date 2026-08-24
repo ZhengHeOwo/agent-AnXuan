@@ -30,22 +30,26 @@ type readTextFileArguments struct {
 }
 
 var readTextFileParameters = json.RawMessage(`{
-            "type": "object",
-            "properties": {
-            "path": {
-                "type": "string",
-                "description": "Workspace-relative text file path using '/' separators, for example internal/config/config.go"
-            }
-        },
-        "required": ["path"],
-        "additionalProperties": false
-    }`)
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Workspace-relative path using '/' separators, including nested paths such as internal/config/config.go. Do not use an absolute path."
+    }
+  },
+  "required": ["path"],
+  "additionalProperties": false
+}`)
 
 func (r *ReadTextFileTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "read_text_file",
-		Description: "Read an allowed text file from the controlled workspace " +
-			"using a workspace-relative path.",
+		Description: "Read the complete raw content of one supported regular text file from the " +
+			"controlled workspace. The workspace root and its absolute filesystem location are " +
+			"intentionally hidden; provide only a workspace-relative path, which may include nested " +
+			"directories and must use '/' separators. The response contains raw file content without " +
+			"line numbers. Use search_text first when the file is unknown. Files that exceed the read " +
+			"size limit, unsupported file types, non-regular files, and symbolic-link paths are rejected.",
 		Parameters: readTextFileParameters,
 	}
 }
