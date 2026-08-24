@@ -10,10 +10,10 @@ import (
 )
 
 type TextMatch struct {
-	Path      string
-	Line      int
-	Text      string
-	Truncated bool
+	Path          string
+	Line          int
+	Text          string
+	TextTruncated bool
 }
 
 const (
@@ -124,10 +124,10 @@ func (w *Workspace) searchTextFile(
 		)
 
 		matches = append(matches, TextMatch{
-			Path:      toolPath,
-			Line:      lineNumber,
-			Text:      text,
-			Truncated: textTruncated,
+			Path:          toolPath,
+			Line:          lineNumber,
+			Text:          text,
+			TextTruncated: textTruncated,
 		})
 	}
 

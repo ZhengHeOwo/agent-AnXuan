@@ -74,10 +74,16 @@ func run() error {
 		return fmt.Errorf("create write_text_file tool: %w", err)
 	}
 
+	searchTextTool, err := workspace.NewSearchTextTool(projectWorkspace)
+	if err != nil {
+		return fmt.Errorf("create search_text tool: %w", err)
+	}
+
 	toolsRegistry, err := tool.NewRegistry(
 		readTextFileTool,
 		listTextFilesTool,
 		writeTextFileTool,
+		searchTextTool,
 	)
 
 	if err != nil {
