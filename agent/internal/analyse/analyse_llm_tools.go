@@ -41,7 +41,7 @@ var preferencesGetParameters = json.RawMessage(`{
   "properties": {
     "name": {
       "type": "string",
-      "description": "description": "The exact name of an existing preference key whose stored value should be retrieved."
+      "description": "The exact name of an existing preference key whose stored value should be retrieved."
     }
   },
   "required": ["name"],

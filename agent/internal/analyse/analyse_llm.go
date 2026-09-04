@@ -46,7 +46,7 @@ func NewAnalyseRuntime(
 		)
 	}
 
-	systemPrompt += databaseKeys
+	systemPrompt += "\n\n" + databaseKeys
 
 	if tools == nil {
 		return nil, fmt.Errorf("tool registry must not be empty")
@@ -102,15 +102,16 @@ func (r *analyseRuntime) analyseRunTurn(ctx context.Context, input string) error
 		}
 
 		if len(message.ToolCalls) == 0 {
+			workingMessages = append(workingMessages, message)
+			r.messages = workingMessages
 			if strings.TrimSpace(message.Content) == "NO_ACTION" {
-				workingMessages = append(workingMessages, message)
-				r.messages = workingMessages
 				return errNoAction
 			}
 
-			workingMessages = append(workingMessages, message)
-			r.messages = workingMessages
-			continue
+			return fmt.Errorf(
+				"Model abnormal text response: %q",
+				message.Content,
+			)
 		}
 
 		workingMessages = append(workingMessages, message)

@@ -19,7 +19,9 @@ func NewAnalyzeProgramConfiguration(
 	*preferencesTransactionPlan,
 	error,
 ) {
-	var preferencesTransactionPlan *preferencesTransactionPlan
+	var preferencesTransactionPlan = &preferencesTransactionPlan{
+		Operations: make([]preferencesOperation, 0),
+	}
 
 	preferencesGetTool, err := NewPreferencesGetTool(store)
 	if err != nil {

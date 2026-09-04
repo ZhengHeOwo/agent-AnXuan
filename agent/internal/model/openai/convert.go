@@ -49,9 +49,10 @@ func toModelMessage(chatMessage chatMessage) (model.Message, error) {
 	}
 
 	modelMessage := model.Message{
-		Role:       role,
-		Content:    content,
-		ToolCallID: chatMessage.ToolCallID,
+		Role:             role,
+		Content:          content,
+		ReasoningContent: chatMessage.ReasoningContent,
+		ToolCallID:       chatMessage.ToolCallID,
 	}
 
 	if len(chatMessage.ToolCalls) == 0 {
@@ -154,10 +155,11 @@ func toChatMessage(modelMessage model.Message) (chatMessage, error) {
 		chatToolCalls = append(chatToolCalls, chatToolCall)
 	}
 	chatMessage := chatMessage{
-		Role:       role,
-		Content:    content,
-		ToolCalls:  chatToolCalls,
-		ToolCallID: modelMessage.ToolCallID,
+		Role:             role,
+		Content:          content,
+		ReasoningContent: modelMessage.ReasoningContent,
+		ToolCalls:        chatToolCalls,
+		ToolCallID:       modelMessage.ToolCallID,
 	}
 
 	return chatMessage, nil

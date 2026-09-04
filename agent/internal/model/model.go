@@ -32,10 +32,11 @@ type ToolCall struct {
 
 // Message 表示与模型供应商无关的对话消息。
 type Message struct {
-	Role       Role
-	Content    string
-	ToolCalls  []ToolCall
-	ToolCallID string
+	Role             Role
+	Content          string
+	ReasoningContent string
+	ToolCalls        []ToolCall
+	ToolCallID       string
 }
 
 // Request 表示一次模型请求。
