@@ -150,6 +150,6 @@ func run() error {
 			continue
 		}
 
-		fmt.Printf("Bot: %s\n", reply)
+		fmt.Printf("AnXuan: %s\n", reply)
 	}
 }
