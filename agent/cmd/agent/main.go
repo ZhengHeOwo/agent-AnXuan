@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/agent"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/analyse"
 	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/config"
 	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model/openai"
 	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/terminal"
@@ -58,6 +59,27 @@ func run() error {
 	defer func() {
 		_ = projectWorkspace.Close()
 	}()
+
+	preferencesStore, err := analyse.NewPreferencesStore("./agent/preferencesStore.db")
+	if err != nil {
+		return fmt.Errorf(
+			"create preferencesStore Database: %w",
+			err,
+		)
+	}
+	defer preferencesStore.Close()
+
+	analyseRuntime, preferencesTransactionPlan, err := analyse.NewAnalyzeProgramConfiguration(
+		client,
+		cfg.Model.Name,
+		preferencesStore,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"The preparation for the analysis model has failed: %w",
+			err,
+		)
+	}
 
 	readTextFileTool, err := workspace.NewReadTextFileTool(projectWorkspace)
 	if err != nil {
@@ -111,6 +133,14 @@ func run() error {
 		}
 
 		if input == "exit" {
+			if err := analyse.AnalyseProcedure(
+				analyseRuntime,
+				preferencesTransactionPlan,
+				runtime.Messages,
+			); err != nil {
+				return err
+			}
+			log.Println("分析程序正常结束")
 			return nil
 		}
 

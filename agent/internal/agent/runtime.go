@@ -15,32 +15,32 @@ const maxModelSteps = 8
 type Runtime struct {
 	llm       model.Model
 	modelName string
-	messages  []model.Message
+	Messages  []model.Message
 	tools     *tool.Registry
 }
 
 // NewRuntime 创建Agent运行时。
 func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *tool.Registry) (*Runtime, error) {
 	if llm == nil {
-		return nil, fmt.Errorf("model 不能为空")
+		return nil, fmt.Errorf("Model must not be empty")
 	}
 
 	if strings.TrimSpace(modelName) == "" {
-		return nil, fmt.Errorf("模型名 不能为空")
+		return nil, fmt.Errorf("ModelName must not be empty")
 	}
 
 	if strings.TrimSpace(systemPrompt) == "" {
-		return nil, fmt.Errorf("系统提示词 不能为空")
+		return nil, fmt.Errorf("systemPrompt must not be empty")
 	}
 
 	if tools == nil {
-		return nil, fmt.Errorf("工具注册表不能为空")
+		return nil, fmt.Errorf("tool registry must not be empty")
 	}
 
 	runtime := &Runtime{
 		llm:       llm,
 		modelName: strings.TrimSpace(modelName),
-		messages: []model.Message{
+		Messages: []model.Message{
 			model.Message{
 				Role:    model.RoleSystem,
 				Content: strings.TrimSpace(systemPrompt),
@@ -61,8 +61,8 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 		return "", fmt.Errorf("input 不能为空")
 	}
 
-	workingMessages := make([]model.Message, 0, len(r.messages)+1)
-	workingMessages = append(workingMessages, r.messages...)
+	workingMessages := make([]model.Message, 0, len(r.Messages)+1)
+	workingMessages = append(workingMessages, r.Messages...)
 	workingMessages = append(workingMessages, model.Message{
 		Role:    model.RoleUser,
 		Content: input,
@@ -89,7 +89,7 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 			}
 
 			workingMessages = append(workingMessages, message)
-			r.messages = workingMessages
+			r.Messages = workingMessages
 			return message.Content, nil
 		}
 

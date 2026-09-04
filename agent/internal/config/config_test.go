@@ -104,7 +104,7 @@ func TestLoadConfig(t *testing.T) {
 				Model: ModelConfig{
 					APIKey:   "test-key",
 					Name:     defaultModelName,
-					Endpoint: "https://api.deepseek.com/chat/completions",
+					Endpoint: "https://api.deepseek.com/v1/chat/completions",
 					Timeout:  testTimeout1,
 				},
 				Agent: AgentConfig{

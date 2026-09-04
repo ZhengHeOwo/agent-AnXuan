@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	defaultModelName    = "deepseek-v4-flash"
-	defaultEndpoint     = "https://api.deepseek.com/chat/completions"
+	defaultModelName    = "deepseek-v4-pro"
+	defaultEndpoint     = "https://api.deepseek.com/v1/chat/completions"
 	defaultTimeout      = "60s"
-	defaultSystemPrompt = "你是智能专家Noah, 以专业角度和成熟冷静的逻辑处理问题和对话。"
+	defaultSystemPrompt = "你是Bot,回复上限50中文汉字,合理安排句式,随时冷静处理问题,只回答专业行业问题,拒绝回复日常问题比如:讲故事..."
 )
 
 type Config struct {

@@ -194,8 +194,8 @@ func TestRunTurn(t *testing.T) {
 				t.Fatalf("调用[NewRuntime]获取[Runtime]结构体失败, 错误: %v", err)
 			}
 
-			if len(runtime.messages) != 1 {
-				t.Fatalf("调用[NewRuntime]获取的[Runtime]结构体的[messages字段]错误, want Len(): %d, got Len(): %d", 1, len(runtime.messages))
+			if len(runtime.Messages) != 1 {
+				t.Fatalf("调用[NewRuntime]获取的[Runtime]结构体的[messages字段]错误, want Len(): %d, got Len(): %d", 1, len(runtime.Messages))
 			}
 
 			wantSystemMessage := model.Message{ // 期望Runtime创建时messages只含有一份系统提示词的model.Message
@@ -203,8 +203,8 @@ func TestRunTurn(t *testing.T) {
 				Content: tt.testSystemPrompt,
 			}
 
-			if !reflect.DeepEqual(runtime.messages[0], wantSystemMessage) {
-				t.Fatalf("调用[NewRuntime]获取的[Runtime]结构体的[messages字段]错误, want: %v, got: %v", wantSystemMessage, runtime.messages[0])
+			if !reflect.DeepEqual(runtime.Messages[0], wantSystemMessage) {
+				t.Fatalf("调用[NewRuntime]获取的[Runtime]结构体的[messages字段]错误, want: %v, got: %v", wantSystemMessage, runtime.Messages[0])
 			}
 
 			gotStr, err := runtime.RunTurn(context.Background(), tt.testInput)
@@ -226,8 +226,8 @@ func TestRunTurn(t *testing.T) {
 				t.Fatalf("期望调用[RunTurn]得到的string与实际不符, want: %s, got: %s", tt.wantStr, gotStr)
 			}
 
-			candidate := make([]model.Message, 0, len(runtime.messages)) // 准备拼接系统提示词和输入 组成固定的第一轮请求信息
-			candidate = append(candidate, runtime.messages[0])
+			candidate := make([]model.Message, 0, len(runtime.Messages)) // 准备拼接系统提示词和输入 组成固定的第一轮请求信息
+			candidate = append(candidate, runtime.Messages[0])
 			candidate = append(candidate, model.Message{
 				Role:    model.RoleUser,
 				Content: tt.testInput,
@@ -243,8 +243,8 @@ func TestRunTurn(t *testing.T) {
 				t.Fatalf("期望调用[Complete]时传入的model.Request错误, want: %v, got: %v", wantModelRequest, (*tt.testFakeModel).LastRequest)
 			}
 
-			if !reflect.DeepEqual(runtime.messages, tt.wantMessages) {
-				t.Fatalf("调用[Complete]一轮结束后 此时的runtime.messages与期望得到的结构不符, want: %v, got: %v", tt.wantMessages, runtime.messages)
+			if !reflect.DeepEqual(runtime.Messages, tt.wantMessages) {
+				t.Fatalf("调用[Complete]一轮结束后 此时的runtime.messages与期望得到的结构不符, want: %v, got: %v", tt.wantMessages, runtime.Messages)
 			}
 		})
 	}
@@ -524,8 +524,8 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 					t.Fatalf("实际错误 %v 中不包含期望错误: %v", err, tt.wantErr)
 				}
 
-				if len(testRuntime.messages) != 1 {
-					t.Fatalf("工具循环失败后正式历史应保持不变, want: 1, got: %d", len(testRuntime.messages))
+				if len(testRuntime.Messages) != 1 {
+					t.Fatalf("工具循环失败后正式历史应保持不变, want: 1, got: %d", len(testRuntime.Messages))
 				}
 
 				return
@@ -551,8 +551,8 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 				t.Fatalf("want: %s, got %s", model.RoleTool, tt.testModel.requests[1].Messages[3].Role)
 			}
 
-			if len(testRuntime.messages) != 5 {
-				t.Fatalf("最终上下文长度错误, want: 5, got: %d", len(testRuntime.messages))
+			if len(testRuntime.Messages) != 5 {
+				t.Fatalf("最终上下文长度错误, want: 5, got: %d", len(testRuntime.Messages))
 			}
 
 			if got := tt.testModel.requests[1].Messages[3].ToolCallID; got != "tool_abc" {
