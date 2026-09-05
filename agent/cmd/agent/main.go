@@ -30,7 +30,7 @@ func run() error {
 		return fmt.Errorf("创建终端交互对象失败: %w", err)
 	}
 
-	if err := config.LoadEnvFile("agent/.env.local"); err != nil {
+	if err := config.LoadEnvFile("local/config/.env.local"); err != nil {
 		return fmt.Errorf("加载环境文件失败: %w", err)
 	}
 
@@ -60,7 +60,7 @@ func run() error {
 		_ = projectWorkspace.Close()
 	}()
 
-	preferencesStore, err := analyse.NewPreferencesStore("./agent/preferencesStore.db")
+	preferencesStore, err := analyse.NewPreferencesStore("./local/data/preferencesStore.db")
 	if err != nil {
 		return fmt.Errorf(
 			"create preferencesStore Database: %w",

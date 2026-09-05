@@ -76,7 +76,7 @@ func (s *preferencesStore) ListModelPreference() (string, error) {
 			err,
 		)
 	}
-	
+
 	return string(data), nil
 }
 

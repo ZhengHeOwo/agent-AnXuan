@@ -35,7 +35,15 @@ func NewAnalyseRuntime(
 		return nil, fmt.Errorf("ModelName must not be empty")
 	}
 
-	systemPrompt := strings.TrimSpace(os.Getenv("ANALYSE_SYSTEM_PROMPT"))
+	dataPrompt, err := os.ReadFile("./local/prompts/analyseModelPrompt.md")
+	if err != nil {
+		return nil, fmt.Errorf(
+			"read file got analy_model_prompyt failed: %w",
+			err,
+		)
+	}
+
+	systemPrompt := strings.TrimSpace(string(dataPrompt))
 	if systemPrompt == "" {
 		return nil, fmt.Errorf("systemPrompt must not be empty")
 	}
@@ -100,7 +108,7 @@ func (r *analyseRuntime) analyseRunTurn(ctx context.Context, input string) error
 				message.Role,
 			)
 		}
-		
+
 		if len(message.ToolCalls) == 0 {
 			workingMessages = append(workingMessages, message)
 			r.messages = workingMessages

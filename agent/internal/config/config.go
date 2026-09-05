@@ -48,7 +48,19 @@ func LoadConfig() (Config, error) {
 	modelName := envOrDefault("MODEL", defaultModelName)
 	modelEndpoint := envOrDefault("LLM_API_URL", defaultEndpoint)
 	modelTimeoutText := envOrDefault("REQUEST_TIMEOUT", defaultTimeout)
-	prompt := envOrDefault("SYSTEM_PROMPT", defaultSystemPrompt)
+
+	dataPrompt, err := os.ReadFile("./local/prompts/mainModelPrompt.md")
+	if err != nil {
+		return Config{}, fmt.Errorf(
+			"read file got analy_model_prompyt failed: %w",
+			err,
+		)
+	}
+
+	prompt := strings.TrimSpace(string(dataPrompt))
+	if prompt == "" {
+		return Config{}, fmt.Errorf("prompt must not be empty")
+	}
 
 	timeout, err := time.ParseDuration(modelTimeoutText)
 	if err != nil {

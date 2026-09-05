@@ -34,7 +34,7 @@ func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *t
 	}
 
 	systemPrompt += preference
-	
+
 	if tools == nil {
 		return nil, fmt.Errorf("tool registry must not be empty")
 	}
