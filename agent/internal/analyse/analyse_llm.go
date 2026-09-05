@@ -100,7 +100,7 @@ func (r *analyseRuntime) analyseRunTurn(ctx context.Context, input string) error
 				message.Role,
 			)
 		}
-
+		
 		if len(message.ToolCalls) == 0 {
 			workingMessages = append(workingMessages, message)
 			r.messages = workingMessages
@@ -147,7 +147,7 @@ func (r *analyseRuntime) analyseRunTurn(ctx context.Context, input string) error
 func (r *analyseRuntime) analyseModelExecuteToolCall(ctx context.Context, call model.ToolCall) string {
 	registeredTool, exists := r.tools.Get(call.Name)
 	if !exists {
-		return fmt.Sprintf("Analyse Model call Tool Falid, Unregistered tool: %q", call.Name)
+		return fmt.Sprintf("Analyse Model call Tool failed, Unregistered tool: %q", call.Name)
 	}
 
 	result, err := registeredTool.Execute(ctx, call.Arguments)

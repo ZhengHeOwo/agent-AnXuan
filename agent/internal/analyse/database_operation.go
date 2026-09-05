@@ -8,15 +8,37 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
+// Preference 定义bbolt键值数据库value的信息结构。
 type Preference struct {
 	Name    string `json:"name"`
 	Content string `json:"content"`
 	Reason  string `json:"reason"`
 }
 
-// preferenceGet 实现 键值数据库bolt 以键取值。
-func (s *preferencesStore) preferenceGet(name string) (Preference, error) {
+// modelPreference 定义主模型需要接收的信息结构。
+type modelPreference struct {
+	Preference  string `json:"preference"`
+	Description string `json:"description"`
+}
+
+// toModelPreference 将遍历出的数据库value还原为数据库信息结构。
+func toModelPreference(
+	modelPreferences []modelPreference,
+	value []byte,
+) (Preference, error) {
 	var preference Preference
+	if err := json.Unmarshal(value, &preference); err != nil {
+		return Preference{}, fmt.Errorf(
+			"decode database value failed: %w",
+			err,
+		)
+	}
+	return preference, nil
+}
+
+// ListModelPreference 列出数据库所有偏好并转换为主模型使用的内部信息结构。
+func (s *preferencesStore) ListModelPreference() (string, error) {
+	modelPreferences := make([]modelPreference, 0)
 
 	err := s.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(preferencesBucketName))
@@ -24,26 +46,38 @@ func (s *preferencesStore) preferenceGet(name string) (Preference, error) {
 			return errPreferencesBucketNotFound
 		}
 
-		data := bucket.Get([]byte(name))
-		if data == nil {
-			return errPreferenceNotFound
-		}
+		return bucket.ForEach(func(key, value []byte) error {
+			preference, err := toModelPreference(modelPreferences, value)
+			if err != nil {
+				return err
+			}
 
-		if err := json.Unmarshal(data, &preference); err != nil {
-			return fmt.Errorf(
-				"decode database value faild: %w",
-				err,
-			)
-		}
+			modelPreferences = append(modelPreferences, modelPreference{
+				Preference:  preference.Name,
+				Description: preference.Content,
+			})
 
-		return nil
+			return nil
+		})
 	})
 
 	if err != nil {
-		return Preference{}, err
+		return "", err
 	}
 
-	return preference, nil
+	if len(modelPreferences) == 0 {
+		return "No information available.", nil
+	}
+
+	data, err := json.Marshal(modelPreferences)
+	if err != nil {
+		return "", fmt.Errorf(
+			"marshal modelPreferences failed: %w",
+			err,
+		)
+	}
+	
+	return string(data), nil
 }
 
 // listPreferenceKeys 列出 键值数据库所有健
@@ -78,6 +112,38 @@ func (s *preferencesStore) listPreferenceKeys() (string, error) {
 	}
 
 	return keys, nil
+}
+
+// preferenceGet 实现 键值数据库bolt 以键取值。
+func (s *preferencesStore) preferenceGet(name string) (Preference, error) {
+	var preference Preference
+
+	err := s.db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(preferencesBucketName))
+		if bucket == nil {
+			return errPreferencesBucketNotFound
+		}
+
+		data := bucket.Get([]byte(name))
+		if data == nil {
+			return errPreferenceNotFound
+		}
+
+		if err := json.Unmarshal(data, &preference); err != nil {
+			return fmt.Errorf(
+				"decode database value failed: %w",
+				err,
+			)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return Preference{}, err
+	}
+
+	return preference, nil
 }
 
 // PutPreference 新增或覆盖偏好。
@@ -125,7 +191,7 @@ func (s *preferencesStore) DeletePreference(name string) error {
 	})
 }
 
-// RenamePreference 原子地重命名偏好键。
+// RenamePreference 重命名偏好键。
 func (s *preferencesStore) RenamePreference(oldName, newName string) error {
 	if newName == "" {
 		return errors.New("new preference name cannot be empty")

@@ -112,7 +112,21 @@ func run() error {
 		return fmt.Errorf("工具注册表创建失败: %w", err)
 	}
 
-	runtime, err := agent.NewRuntime(client, cfg.Model.Name, cfg.Agent.SystemPrompt, toolsRegistry)
+	mainModelPreference, err := preferencesStore.ListModelPreference()
+	if err != nil {
+		return fmt.Errorf(
+			"get Main model preference failed: %w",
+			err,
+		)
+	}
+
+	runtime, err := agent.NewRuntime(
+		client,
+		cfg.Model.Name,
+		cfg.Agent.SystemPrompt,
+		toolsRegistry,
+		mainModelPreference,
+	)
 	if err != nil {
 		return fmt.Errorf("创建Agent运行器失败: %w", err)
 	}

@@ -26,7 +26,7 @@ func NewAnalyzeProgramConfiguration(
 	preferencesGetTool, err := NewPreferencesGetTool(store)
 	if err != nil {
 		return nil, nil, fmt.Errorf(
-			"create preferences_get_tool faild: %w",
+			"create preferences_get_tool failed: %w",
 			err,
 		)
 	}
@@ -34,7 +34,7 @@ func NewAnalyzeProgramConfiguration(
 	preferencesOperationSubmitTool, err := NewPreferencesOperationSubmitTool(preferencesTransactionPlan)
 	if err != nil {
 		return nil, nil, fmt.Errorf(
-			"create preferences_get_tool faild: %w",
+			"create preferences_get_tool failed: %w",
 			err,
 		)
 	}
@@ -53,7 +53,7 @@ func NewAnalyzeProgramConfiguration(
 	databaseKeys, err := store.listPreferenceKeys()
 	if err != nil {
 		return nil, nil, fmt.Errorf(
-			"Get Preference Keys list faild: %w",
+			"Get Preference Keys list failed: %w",
 			err,
 		)
 	}
@@ -61,7 +61,7 @@ func NewAnalyzeProgramConfiguration(
 	analyseRuntime, err := NewAnalyseRuntime(llm, modelName, tools, databaseKeys, store)
 	if err != nil {
 		return nil, nil, fmt.Errorf(
-			"create analyseRuntime faild: %w",
+			"create analyseRuntime failed: %w",
 			err,
 		)
 	}
@@ -103,7 +103,7 @@ func AnalyseProcedure(
 		}
 	}
 
-	if len(preferencesTransactionPlan.Operations) != 0 {
+	if len(preferencesTransactionPlan.Operations) > 0 {
 		for _, operation := range preferencesTransactionPlan.Operations {
 			switch operation.operationType {
 			case preferencesOperationRename:
