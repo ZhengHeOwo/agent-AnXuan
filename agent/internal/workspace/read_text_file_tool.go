@@ -56,24 +56,24 @@ func (r *ReadTextFileTool) Definition() model.ToolDefinition {
 
 func (r *ReadTextFileTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("context canceled before tool execution: %w", err)
+		return "", fmt.Errorf("执行 read_text_file 工具前失败, 因为: %w", err)
 	}
 
 	args, err := tool.DecodeObjectArguments[readTextFileArguments](arguments)
 	if err != nil {
 		return "", fmt.Errorf(
-			"parse read_text_file arguments: %w",
+			"解析 parse read_text_file 参数失败, 因为: %w",
 			err,
 		)
 	}
 
 	content, err := r.workspace.ReadTextFile(args.Path)
 	if err != nil {
-		return "", fmt.Errorf("read text file %q: %w", args.Path, err)
+		return "", fmt.Errorf("使用 read_text_file 工具获取文件 %q 内容失败, 因为: %w", args.Path, err)
 	}
 
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("context canceled before result returned: %w", err)
+		return "", fmt.Errorf("执行 read_text_file 工具后, 即将返回结果时失败, 因为: %w", err)
 	}
 
 	return content, nil

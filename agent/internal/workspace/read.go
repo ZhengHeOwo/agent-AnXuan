@@ -5,16 +5,16 @@ import (
 	"io"
 )
 
-const maxReadBytes = 40_000
+const maxReadBytes = 400_000
 
 func (w *Workspace) ReadTextFile(input string) (string, error) {
 	toolPath, err := validateToolPath(input)
 	if err != nil {
-		return "", fmt.Errorf("validate path %v: %w", input, err)
+		return "", err
 	}
 
 	if !isAllowedTextFile(toolPath) {
-		return "", fmt.Errorf("validate path %v: %w", toolPath, ErrUnsupportedFileType)
+		return "", fmt.Errorf("%v 被拒绝, 因为: %w", toolPath, ErrUnsupportedFileType)
 	}
 
 	localPath, err := localizeToolPath(toolPath)
@@ -28,28 +28,33 @@ func (w *Workspace) ReadTextFile(input string) (string, error) {
 
 	file, err := w.root.Open(localPath)
 	if err != nil {
-		return "", fmt.Errorf("open file %v: %w", localPath, err)
+		return "", fmt.Errorf("打开 %v 失败, 因为: %w", localPath, err)
 	}
 	defer file.Close()
 
 	info, err := file.Stat()
 	if err != nil {
-		return "", fmt.Errorf("stat file %v: %w", toolPath, err)
+		return "", fmt.Errorf("获取 %v 信息失败, 因为: %w", toolPath, err)
 	}
 
 	if !info.Mode().IsRegular() {
-		return "", fmt.Errorf("validate file %v: not a regular file", toolPath)
+		return "", fmt.Errorf("%v被拒绝, 因为: 不是普通文件", toolPath)
 	}
 
 	reader := io.LimitReader(file, int64(maxReadBytes+1))
 
 	data, err := io.ReadAll(reader)
 	if err != nil {
-		return "", fmt.Errorf("read file %v: %w", toolPath, err)
+		return "", fmt.Errorf(
+			"读取 %v 失败: %w(上限 %d 字节, 本次未返回文件内容)",
+			toolPath,
+			err,
+			maxReadBytes,
+		)
 	}
 
 	if len(data) > maxReadBytes {
-		return "", fmt.Errorf("read file %v: %w", toolPath, ErrFileTooLarge)
+		return "", fmt.Errorf("读取 %v 失败, 因为: %w", toolPath, ErrFileTooLarge)
 	}
 
 	return string(data), nil

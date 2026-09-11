@@ -19,7 +19,7 @@ type ByteTooLongError struct {
 
 func (t *ByteTooLongError) Error() string {
 	return fmt.Sprintf(
-		"content exceeds byte limit: limit %d, actual %d",
+		"内容超出字节限制: 上限 %d, 当前 %d",
 		t.limit,
 		t.actual,
 	)
@@ -32,7 +32,7 @@ type RuneTooLongError struct {
 
 func (r *RuneTooLongError) Error() string {
 	return fmt.Sprintf(
-		"content exceeds character limit: limit %d, actual %d",
+		"内容超出字符限制: 上限 %d, 当前 %d",
 		r.limit,
 		r.actual,
 	)
@@ -76,7 +76,7 @@ func (w *Workspace) inspectWriteTarget(
 		}
 
 		return 0, fmt.Errorf(
-			"inspect write target: %q: %w",
+			"获取 %q 信息失败, 因为: %w",
 			localPath,
 			err,
 		)
@@ -84,7 +84,7 @@ func (w *Workspace) inspectWriteTarget(
 
 	if info.Mode()&os.ModeSymlink != 0 {
 		return 0, fmt.Errorf(
-			"inspect write target: %q: %w",
+			"%q 未经过校验, 因为: %w",
 			localPath,
 			ErrSymlinkPath,
 		)
@@ -92,7 +92,7 @@ func (w *Workspace) inspectWriteTarget(
 
 	if !info.Mode().IsRegular() {
 		return 0, fmt.Errorf(
-			"write target %q is not a regular file",
+			"%q 不是普通文件",
 			localPath,
 		)
 	}
@@ -105,7 +105,7 @@ func randomTemporarySuffix() (string, error) {
 
 	if _, err := rand.Read(data[:]); err != nil {
 		return "", fmt.Errorf(
-			"generate temporary file suffix: %w",
+			"生成临时文件后缀失败, 因为: %w",
 			err,
 		)
 	}
@@ -141,7 +141,7 @@ func (w *Workspace) createTemporaryTextFile(
 
 		if !errors.Is(err, fs.ErrExist) {
 			return nil, "", fmt.Errorf(
-				"create temporary file %q: %w",
+				"创建临时文件 %q 失败, 原因: %w",
 				tempPath,
 				err,
 			)
@@ -149,7 +149,7 @@ func (w *Workspace) createTemporaryTextFile(
 	}
 
 	return nil, "", fmt.Errorf(
-		"create temporary file for %q: name collisions exceeded limit",
+		"终止为 %q 创建临时文件, 原因: 名称冲突次数超过上限",
 		targetPath,
 	)
 }
@@ -162,8 +162,7 @@ func (w *Workspace) replaceTextFile(
 	file, tempPath, err := w.createTemporaryTextFile(localPath, perm)
 	if err != nil {
 		return fmt.Errorf(
-			"create temporary file %q: %w",
-			localPath,
+			"为写入操作准备临时文件失败, 因为: %w",
 			err,
 		)
 	}
@@ -182,7 +181,7 @@ func (w *Workspace) replaceTextFile(
 
 	if _, err := file.Write(content); err != nil {
 		return fmt.Errorf(
-			"write temporary file %q: %w",
+			"写入临时文件 %q 失败, 原因: %w",
 			tempPath,
 			err,
 		)
@@ -190,7 +189,7 @@ func (w *Workspace) replaceTextFile(
 
 	if err := file.Sync(); err != nil {
 		return fmt.Errorf(
-			"sync temporary file %q: %w",
+			"同步临时文件 %q失败, 原因: %w",
 			tempPath,
 			err,
 		)
@@ -198,7 +197,7 @@ func (w *Workspace) replaceTextFile(
 
 	if err := file.Close(); err != nil {
 		return fmt.Errorf(
-			"close temporary file %q: %w",
+			"关闭临时文件 %q 失败 原因: %w",
 			tempPath,
 			err,
 		)
@@ -207,7 +206,7 @@ func (w *Workspace) replaceTextFile(
 
 	if err := w.root.Rename(tempPath, localPath); err != nil {
 		return fmt.Errorf(
-			"rename text file %q: %w",
+			"重命名文件 %q 失败, 原因: %w",
 			tempPath,
 			err,
 		)
@@ -224,7 +223,7 @@ func (w *Workspace) validateTextFileWrite(
 	toolPath, err := validateToolPath(input)
 	if err != nil {
 		return "", fmt.Errorf(
-			"validate write path %q: %w",
+			"写入 %q 未通过校验, 因为: %w",
 			input,
 			err,
 		)
@@ -232,7 +231,7 @@ func (w *Workspace) validateTextFileWrite(
 
 	if !isAllowedTextFile(toolPath) {
 		return "", fmt.Errorf(
-			"validate write path %q: %w",
+			"写入 %q 未通过校验, 因为: %w",
 			toolPath,
 			ErrUnsupportedFileType,
 		)
@@ -240,7 +239,7 @@ func (w *Workspace) validateTextFileWrite(
 
 	if err := validateTextFileContent(content); err != nil {
 		return "", fmt.Errorf(
-			"validate text file content: %w",
+			"写入内容未通过校验, 因为: %w",
 			err,
 		)
 	}
@@ -266,7 +265,7 @@ func (w *Workspace) WriteTextFile(
 	if parentDir != "." {
 		if err := w.root.MkdirAll(parentDir, 0o755); err != nil {
 			return fmt.Errorf(
-				"create parent directory %q: %w",
+				"创建父级目录 %q 失败, 因为: %w",
 				parentDir,
 				err,
 			)

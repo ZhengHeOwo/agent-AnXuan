@@ -39,7 +39,7 @@ func (w *Workspace) searchTextFile(
 	toolPath, err := validateToolPath(input)
 	if err != nil {
 		return nil, false, fmt.Errorf(
-			"validate search path %q: %w",
+			"%q未通过验证, 因为: %w",
 			input,
 			err,
 		)
@@ -47,7 +47,7 @@ func (w *Workspace) searchTextFile(
 
 	if !isAllowedTextFile(toolPath) {
 		return nil, false, fmt.Errorf(
-			"validate search path %q: %w",
+			"%q 未通过验证, 因为: %w",
 			toolPath,
 			ErrUnsupportedFileType,
 		)
@@ -65,7 +65,7 @@ func (w *Workspace) searchTextFile(
 	file, err := w.root.Open(localPath)
 	if err != nil {
 		return nil, false, fmt.Errorf(
-			"open search file %q: %w",
+			"打开 %q 失败, 因为: %w",
 			toolPath,
 			err,
 		)
@@ -75,7 +75,7 @@ func (w *Workspace) searchTextFile(
 	info, err := file.Stat()
 	if err != nil {
 		return nil, false, fmt.Errorf(
-			"stat search file %q: %w",
+			"获取 %q 信息失败, 因为: %w",
 			toolPath,
 			err,
 		)
@@ -83,7 +83,7 @@ func (w *Workspace) searchTextFile(
 
 	if !info.Mode().IsRegular() {
 		return nil, false, fmt.Errorf(
-			"search file %q is not a regular file",
+			"%q 不是普通文件",
 			toolPath,
 		)
 	}
@@ -172,13 +172,13 @@ const (
 func validateSearchQuery(query string) error {
 	if strings.TrimSpace(query) == "" {
 		return fmt.Errorf(
-			"search query must not be empty",
+			"搜索目标为空",
 		)
 	}
 
 	if len(query) > maxSearchQueryBytes {
 		return fmt.Errorf(
-			"search query exceeds byte limit: limit %d, actual %d",
+			"搜索目标过大(上限 %d 字节, 当前目标 %d 字节)",
 			maxSearchQueryBytes,
 			len(query),
 		)
@@ -292,7 +292,7 @@ func (w *Workspace) SearchText(
 	fileList, err := w.ListTextFiles(ctx)
 	if err != nil {
 		return TextSearchResult{}, fmt.Errorf(
-			"list searchable text files: %w",
+			"获取工作区可搜索文件列表失败, 因为: %w",
 			err,
 		)
 	}
@@ -369,7 +369,7 @@ func (w *Workspace) SearchText(
 
 	if firstError != nil {
 		return TextSearchResult{}, fmt.Errorf(
-			"search workspace text: %w",
+			"搜索工作区文本失败, 因为: %w",
 			firstError,
 		)
 	}

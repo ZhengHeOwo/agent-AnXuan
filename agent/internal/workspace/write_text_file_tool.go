@@ -73,13 +73,13 @@ func (t *WriteTextFileTool) Definition() model.ToolDefinition {
 
 func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("context canceled before tool execution: %w", err)
+		return "", fmt.Errorf("执行 write_text_file 工具前中断, 因为: %w", err)
 	}
 
 	args, err := tool.DecodeObjectArguments[writeTextFileArguments](arguments)
 	if err != nil {
 		return "", fmt.Errorf(
-			"parse write_text_file arguments: %w",
+			"解析 write_text_file 参数失败, 因为: %w.(未产生审批)",
 			err,
 		)
 	}
@@ -87,7 +87,7 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 	toolPath, err := t.workspace.validateTextFileWrite(args.Path, args.Content)
 	if err != nil {
 		return "", fmt.Errorf(
-			"validate write_text_file arguments: %w",
+			"write_text_file 参数未通过执行前校验: %w.(未产生审批)",
 			err,
 		)
 	}
@@ -107,29 +107,29 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 	)
 
 	if err != nil {
-		return "", fmt.Errorf("Authorization write text file operation failed: %w", err)
+		return "", fmt.Errorf("授权程序中断, 因为: %w", err)
 	}
 
 	if !confirmed {
 		return fmt.Sprintf(
-			"The write file %s operation was rejected, No modifications were made",
+			"写入 %q 被拒绝(未进行任何更改)",
 			toolPath,
 		), nil
 	}
 
 	if err = t.workspace.WriteTextFile(toolPath, args.Content); err != nil {
 		return "", fmt.Errorf(
-			"write text file %q: %w",
+			"写入 %q 失败, 因为: %w",
 			toolPath,
 			err,
 		)
 	}
 
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("context canceled before result returned: %w", err)
+		return "", fmt.Errorf("执行 write_text_file 工具后, 即将返回结果时失败, 因为: %w.(文件操作已完成)", err)
 	}
 
-	return fmt.Sprintf("File %q written successfully", toolPath), nil
+	return fmt.Sprintf("文件 %q 写入成功", toolPath), nil
 }
 
 var _ tool.Tool = (*WriteTextFileTool)(nil)

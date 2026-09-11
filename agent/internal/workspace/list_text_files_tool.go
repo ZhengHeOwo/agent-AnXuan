@@ -52,20 +52,20 @@ type listTextFilesResponse struct {
 
 func (l *ListTextFilesTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("context canceled before tool execution: %w", err)
+		return "", fmt.Errorf("执行 list_text_files 工具前失败, 因为: %w", err)
 	}
 
 	_, err := tool.DecodeObjectArguments[struct{}](arguments)
 	if err != nil {
 		return "", fmt.Errorf(
-			"parse list_text_files arguments: %w",
+			"解析 list_text_files 参数失败, 因为: %w",
 			err,
 		)
 	}
 
 	fileList, err := l.workspace.ListTextFiles(ctx)
 	if err != nil {
-		return "", fmt.Errorf("execute ListTextFiles(ctx): %w", err)
+		return "", fmt.Errorf("使用 list_text_files 获取文件列表失败, 因为: %w", err)
 	}
 
 	response := listTextFilesResponse{
@@ -75,11 +75,11 @@ func (l *ListTextFilesTool) Execute(ctx context.Context, arguments json.RawMessa
 
 	encoded, err := json.Marshal(response)
 	if err != nil {
-		return "", fmt.Errorf("marshal ListTextFiles(ctx).got: %w", err)
+		return "", fmt.Errorf("json.Marshal list_text_files result: %w", err)
 	}
 
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("context canceled before result returned: %w", err)
+		return "", fmt.Errorf("执行 list_text_files 工具后, 即将返回结果时失败, 因为: %w", err)
 	}
 
 	return string(encoded), nil

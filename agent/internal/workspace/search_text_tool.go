@@ -71,13 +71,13 @@ type searchTextResponse struct {
 
 func (t *SearchTextTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("context canceled before tool execution: %w", err)
+		return "", fmt.Errorf("执行 search_text 工具前失败, 因为: %w", err)
 	}
 
 	args, err := tool.DecodeObjectArguments[searchTextArguments](arguments)
 	if err != nil {
 		return "", fmt.Errorf(
-			"parse search_text arguments: %w",
+			"解析 search_text 参数失败, 因为: %w",
 			err,
 		)
 	}
@@ -89,7 +89,7 @@ func (t *SearchTextTool) Execute(ctx context.Context, arguments json.RawMessage)
 
 	if err != nil {
 		return "", fmt.Errorf(
-			"search workspace text: %w",
+			"通过 search_text 工具在工作区搜索文本失败, 因为: %w",
 			err,
 		)
 	}
@@ -118,13 +118,13 @@ func (t *SearchTextTool) Execute(ctx context.Context, arguments json.RawMessage)
 	encoded, err := json.Marshal(response)
 	if err != nil {
 		return "", fmt.Errorf(
-			"marshal search_text result: %w",
+			"json.Marshal search_text result: %w",
 			err,
 		)
 	}
 
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("context canceled before result returned: %w", err)
+		return "", fmt.Errorf("执行 search_text 工具后, 即将返回结果时失败, 因为: %w", err)
 	}
 
 	return string(encoded), nil
