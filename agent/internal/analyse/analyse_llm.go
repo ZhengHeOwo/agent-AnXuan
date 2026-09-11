@@ -16,14 +16,14 @@ type analyseRuntime struct {
 	llm       model.Model
 	modelName string
 	messages  []model.Message
-	tools     *tool.Registry
+	tools     *tool.ToolRegistry
 	store     *preferencesStore
 }
 
 func NewAnalyseRuntime(
 	llm model.Model,
 	modelName string,
-	tools *tool.Registry,
+	tools *tool.ToolRegistry,
 	databaseKeys string,
 	store *preferencesStore,
 ) (*analyseRuntime, error) {
@@ -57,7 +57,7 @@ func NewAnalyseRuntime(
 	systemPrompt += "\n\n" + databaseKeys
 
 	if tools == nil {
-		return nil, fmt.Errorf("tool registry must not be empty")
+		return nil, fmt.Errorf("tool ToolRegistry must not be empty")
 	}
 
 	analyseRuntime := &analyseRuntime{

@@ -39,13 +39,13 @@ func NewAnalyzeProgramConfiguration(
 		)
 	}
 
-	tools, err := tool.NewRegistry(
+	tools, err := tool.NewToolRegistry(
 		preferencesGetTool,
 		preferencesOperationSubmitTool,
 	)
 	if err != nil {
 		return nil, nil, fmt.Errorf(
-			"Tool registry creation failed: %w",
+			"Tool ToolRegistry creation failed: %w",
 			err,
 		)
 	}

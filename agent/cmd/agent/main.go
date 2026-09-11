@@ -101,7 +101,7 @@ func run() error {
 		return fmt.Errorf("create search_text tool: %w", err)
 	}
 
-	toolsRegistry, err := tool.NewRegistry(
+	toolsRegistry, err := tool.NewToolRegistry(
 		readTextFileTool,
 		listTextFilesTool,
 		writeTextFileTool,

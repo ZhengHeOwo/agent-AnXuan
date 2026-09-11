@@ -9,18 +9,18 @@ import (
 	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/tool"
 )
 
-const maxModelSteps = 8
+const maxModelSteps = 30
 
 // Runtime 管理对话历史和单轮内的多步工具调用。
 type Runtime struct {
 	llm       model.Model
 	modelName string
 	Messages  []model.Message
-	tools     *tool.Registry
+	tools     *tool.ToolRegistry
 }
 
 // NewRuntime 创建Agent运行时。
-func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *tool.Registry, preference string) (*Runtime, error) {
+func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *tool.ToolRegistry, preference string) (*Runtime, error) {
 	if llm == nil {
 		return nil, fmt.Errorf("Model must not be empty")
 	}

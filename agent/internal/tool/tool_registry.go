@@ -8,15 +8,15 @@ import (
 	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model"
 )
 
-// Registry 保存工具实现，并提供工具定义列表和名称查找能力。
-type Registry struct {
+// ToolRegistry 保存工具实现，并提供工具定义列表和名称查找能力。
+type ToolRegistry struct {
 	tools       map[string]Tool
 	definitions []model.ToolDefinition
 }
 
-// NewRegistry 校验并注册工具。
-func NewRegistry(tools ...Tool) (*Registry, error) {
-	registry := &Registry{
+// NewToolRegistry 校验并注册工具。
+func NewToolRegistry(tools ...Tool) (*ToolRegistry, error) {
+	ToolRegistry := &ToolRegistry{
 		tools:       make(map[string]Tool, len(tools)),
 		definitions: make([]model.ToolDefinition, 0, len(tools)),
 	}
@@ -34,7 +34,7 @@ func NewRegistry(tools ...Tool) (*Registry, error) {
 			return nil, fmt.Errorf("工具名不能为空")
 		}
 
-		if _, exists := registry.tools[name]; exists {
+		if _, exists := ToolRegistry.tools[name]; exists {
 			return nil, fmt.Errorf("工具名 %q 已存在", name)
 		}
 
@@ -49,15 +49,15 @@ func NewRegistry(tools ...Tool) (*Registry, error) {
 
 		definition.Name = name
 		definition.Description = description
-		registry.tools[name] = candidate
-		registry.definitions = append(registry.definitions, definition)
+		ToolRegistry.tools[name] = candidate
+		ToolRegistry.definitions = append(ToolRegistry.definitions, definition)
 	}
 
-	return registry, nil
+	return ToolRegistry, nil
 }
 
 // Get 按工具名称查找已注册工具。
-func (r *Registry) Get(name string) (Tool, bool) {
+func (r *ToolRegistry) Get(name string) (Tool, bool) {
 	if r == nil {
 		return nil, false
 	}
@@ -67,7 +67,7 @@ func (r *Registry) Get(name string) (Tool, bool) {
 }
 
 // Definitions 返回工具定义的副本。
-func (r *Registry) Definitions() []model.ToolDefinition {
+func (r *ToolRegistry) Definitions() []model.ToolDefinition {
 	if r == nil {
 		return nil
 	}

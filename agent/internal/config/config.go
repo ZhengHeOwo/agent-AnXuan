@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	defaultModelName    = "deepseek-v4-pro"
+	defaultModelName    = "deepseek-flash"
 	defaultEndpoint     = "https://api.deepseek.com/v1/chat/completions"
 	defaultTimeout      = "60s"
 	defaultSystemPrompt = "你是Bot,回复上限50中文汉字,合理安排句式,随时冷静处理问题,只回答专业行业问题,拒绝回复日常问题比如:讲故事..."
