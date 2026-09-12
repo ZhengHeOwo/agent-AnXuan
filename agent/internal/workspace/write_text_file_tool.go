@@ -79,7 +79,7 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 	args, err := tool.DecodeObjectArguments[writeTextFileArguments](arguments)
 	if err != nil {
 		return "", fmt.Errorf(
-			"解析 write_text_file 参数失败, 因为: %w.(未产生审批)",
+			"解析 write_text_file 参数失败, 因为: %w(未产生审批)",
 			err,
 		)
 	}
@@ -87,7 +87,7 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 	toolPath, err := t.workspace.validateTextFileWrite(args.Path, args.Content)
 	if err != nil {
 		return "", fmt.Errorf(
-			"write_text_file 参数未通过执行前校验: %w.(未产生审批)",
+			"write_text_file 参数未通过执行前校验: %w(未产生审批)",
 			err,
 		)
 	}
@@ -126,7 +126,7 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 	}
 
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("执行 write_text_file 工具后, 即将返回结果时失败, 因为: %w.(文件操作已完成)", err)
+		return "", fmt.Errorf("执行 write_text_file 工具后, 即将返回结果时失败, 因为: %w(文件操作已完成)", err)
 	}
 
 	return fmt.Sprintf("文件 %q 写入成功", toolPath), nil

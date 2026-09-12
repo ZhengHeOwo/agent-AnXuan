@@ -164,6 +164,6 @@ func run() error {
 			continue
 		}
 
-		fmt.Printf("AnXuan: %s\n", reply)
+		fmt.Printf("AnXuan: \n%s\n", reply)
 	}
 }
