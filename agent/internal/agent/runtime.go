@@ -122,13 +122,15 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 func (r *Runtime) executeToolCall(ctx context.Context, call model.ToolCall) string {
 	registeredTool, exists := r.tools.Get(call.Name)
 	if !exists {
-		return fmt.Sprintf("工具执行失败, 未注册工具: %q", call.Name)
+		return fmt.Sprintf("工具执行失败, 因为: 未注册%q", call.Name)
 	}
 
 	result, err := registeredTool.Execute(ctx, call.Arguments)
 	if err != nil {
-		return fmt.Sprintf("工具 %q 执行失败: %v", call.Name, err)
+		if result == "" {
+			return err.Error()
+		}
+		return fmt.Sprintf("%v\n已返回的部分结果:\n%s", err, result)
 	}
-
 	return result
 }

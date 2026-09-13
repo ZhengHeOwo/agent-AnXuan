@@ -6,6 +6,9 @@ import (
 
 // read_text_file_tool 结果包装
 func readTextFileToolResultResponse(result *readTextFileResult) string {
+	if result == nil {
+		return ""
+	}
 	return fmt.Sprintf(
 		"内容是否截断: %t | bytes: %d | runes: %d | lines: %d\n正文:\n%s",
 		result.truncated,

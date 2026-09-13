@@ -94,17 +94,26 @@ func (w *Workspace) ReadTextFile(input string) (*readTextFileResult, error) {
 		countLines++
 	}
 
+	runes := utf8.RuneCountInString(text)
+	bytes := len(data)
+
 	if err = scanner.Err(); err != nil {
-		return nil, fmt.Errorf(
-			"获取 %v 总行数失败, 因为: %w",
-			toolPath,
-			err,
-		)
+		return &readTextFileResult{
+				content:   sb.String(),
+				bytes:     bytes,
+				runes:     runes,
+				lines:     0,
+				truncated: truncated,
+			}, fmt.Errorf(
+				"获取 %v 总行数失败, 因为: %w(已返回读取内容, 并将lines设为0)",
+				toolPath,
+				err,
+			)
 	}
 	return &readTextFileResult{
 		content:   sb.String(),
-		bytes:     len(data),
-		runes:     utf8.RuneCountInString(text),
+		bytes:     bytes,
+		runes:     runes,
 		lines:     countLines,
 		truncated: truncated,
 	}, nil
