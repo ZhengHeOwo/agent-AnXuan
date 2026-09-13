@@ -54,7 +54,7 @@ func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *t
 	return runtime, nil
 }
 
-// RunTurn 执行一轮用户输入。
+// RunTurn 执行一轮狰和输入。
 //
 // 只有取得最终模型回答后，本轮候选消息才会提交到正式历史。
 func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {

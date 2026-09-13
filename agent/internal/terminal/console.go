@@ -55,7 +55,7 @@ func (c *Console) ReadLine(prompt string) (string, error) {
 	return line, nil
 }
 
-// Confirm 展示副作用操作并等待用户明确授权。
+// Confirm 展示副作用操作并等待狰和明确授权。
 func (c *Console) Confirm(ctx context.Context, request tool.ConfirmationRequest) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, fmt.Errorf("确认操作前上下文已结束: %w", err)
