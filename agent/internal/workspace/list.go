@@ -8,19 +8,19 @@ import (
 
 const (
 	maxListEntries = 2_000
-	maxListedFiles = 500
+	maxListedFiles = 1500
 )
 
-type TextFileList struct {
-	Paths     []string
-	Truncated bool
+type textFileList struct {
+	paths     []string
+	truncated bool
 }
 
 func (w *Workspace) ListTextFiles(
 	ctx context.Context,
-) (TextFileList, error) {
-	result := TextFileList{
-		Paths: make([]string, 0),
+) (*textFileList, error) {
+	result := &textFileList{
+		paths: make([]string, 0),
 	}
 
 	scannedEntries := 0
@@ -47,7 +47,7 @@ func (w *Workspace) ListTextFiles(
 
 			scannedEntries++
 			if scannedEntries > maxListEntries {
-				result.Truncated = true
+				result.truncated = true
 				return fs.SkipAll
 			}
 
@@ -76,18 +76,18 @@ func (w *Workspace) ListTextFiles(
 				return nil
 			}
 
-			if len(result.Paths) >= maxListedFiles {
-				result.Truncated = true
+			if len(result.paths) >= maxListedFiles {
+				result.truncated = true
 				return fs.SkipAll
 			}
 
-			result.Paths = append(result.Paths, toolPath)
+			result.paths = append(result.paths, toolPath)
 			return nil
 		},
 	)
 
 	if err != nil {
-		return TextFileList{}, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"scan workspace: %w",
 			err,
 		)

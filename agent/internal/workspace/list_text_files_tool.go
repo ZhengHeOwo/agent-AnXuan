@@ -34,13 +34,12 @@ var listTextFilesParameters = json.RawMessage(`{
 func (l *ListTextFilesTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "list_text_files",
-		Description: "Recursively list supported regular text files in the controlled workspace. " +
-			"The workspace root and absolute filesystem location are intentionally hidden. Every " +
-			"returned value is a workspace-relative path using '/' separators, and nested files may " +
-			"appear as paths such as internal/config/config.go. Supported files include go.mod, go.sum, " +
-			"and files ending in .go, .md, .txt, .json, .yaml, .yml, or .toml. Symbolic links and " +
-			"non-regular files are excluded. If truncated is true, the listing is incomplete because " +
-			"a safety limit was reached; this tool currently has no pagination or continuation cursor.",
+		Description: "递归列出受控工作区内受支持的普通文本文件。\n" +
+			"工作区真实根目录和绝对路径不会暴露：返回的每个值都是工作区相对路径，以 '/' 分隔，嵌套文件形如 internal/config/config.go。\n" +
+			"结果只包含受支持的普通文本文件，即文件名恰为 go.mod 或 go.sum，以及扩展名恰为 .go、.md、.txt、.json、.yaml、.yml、.toml（区分大小写，只匹配小写）的文件；目录、符号链接和其他非普通文件不会被列出，不受支持的文件会被跳过。\n" +
+			"本工具不需要参数。返回的不是 JSON，而是纯文本：第一行是 \"列表是否被截断: true |\" 或 \"列表是否被截断: false |\"，第二行是 \"列表结果:\"，第三行是路径列表，形如 [\"go.mod\" \"main.go\"]，其中每个路径是 Go 字符串字面量，用双引号包裹、以空格分隔。顺序为目录深度优先遍历，同一目录内按名称排序。\n" +
+			"结果被标为截断有两种原因：遍历到的条目（含目录和符号链接）超过 2000 个，或已列出的文件达到 1500 个。被截断时列表不完整，缺少遍历顺序靠后的部分；本工具没有分页或续读游标，无法取得剩余内容，应改用更精确的工具定位文件。\n" +
+			"遍历失败（如某个条目无法访问）时工具直接报错，返回内容为空，不包含此前已经收集到的路径。",
 		Parameters: listTextFilesParameters,
 	}
 }
@@ -63,26 +62,18 @@ func (l *ListTextFilesTool) Execute(ctx context.Context, arguments json.RawMessa
 		)
 	}
 
-	fileList, err := l.workspace.ListTextFiles(ctx)
-	if err != nil {
-		return "", fmt.Errorf("使用 list_text_files 获取文件列表失败, 因为: %w", err)
-	}
+	executeResult, err := l.workspace.ListTextFiles(ctx)
+	result := listTextFilesToolResultResponse(executeResult)
 
-	response := listTextFilesResponse{
-		Paths:     fileList.Paths,
-		Truncated: fileList.Truncated,
-	}
-
-	encoded, err := json.Marshal(response)
 	if err != nil {
-		return "", fmt.Errorf("json.Marshal list_text_files result: %w", err)
+		return result, fmt.Errorf("使用 list_text_files 获取文件列表失败, 因为: %w", err)
 	}
 
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("执行 list_text_files 工具后, 即将返回结果时失败, 因为: %w", err)
+		return result, fmt.Errorf("执行 list_text_files 工具后, 即将返回结果时失败, 因为: %w", err)
 	}
 
-	return string(encoded), nil
+	return result, nil
 }
 
 var _ tool.Tool = (*ListTextFilesTool)(nil)

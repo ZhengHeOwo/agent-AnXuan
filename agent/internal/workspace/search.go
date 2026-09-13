@@ -297,9 +297,9 @@ func (w *Workspace) SearchText(
 		)
 	}
 
-	result.Truncated = fileList.Truncated
+	result.Truncated = fileList.truncated
 
-	if len(fileList.Paths) == 0 {
+	if len(fileList.paths) == 0 {
 		return result, nil
 	}
 
@@ -329,7 +329,7 @@ func (w *Workspace) SearchText(
 	go func() {
 		defer close(jobs)
 
-		for index, path := range fileList.Paths {
+		for index, path := range fileList.paths {
 			job := searchFileJob{
 				Index: index,
 				Path:  path,
@@ -350,7 +350,7 @@ func (w *Workspace) SearchText(
 
 	fileResults := make(
 		[]searchFileResult,
-		len(fileList.Paths),
+		len(fileList.paths),
 	)
 
 	var firstError error
