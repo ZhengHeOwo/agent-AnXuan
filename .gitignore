@@ -8,3 +8,10 @@
 
 preferencesStore.db
 **/preferencesStore.db
+
+# 提示词
+/local/prompts/mainModelPrompt.md
+/local/prompts/analyseModelPrompt.md
+
+# AI 工作区全部内容，包括子目录
+/AIWorkspace/
