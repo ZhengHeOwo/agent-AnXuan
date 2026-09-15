@@ -4,10 +4,58 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
 )
+
+type searchIssueKind string
+
+const (
+	issueOpenFailed         searchIssueKind = "open_failed"
+	issueNotRegular         searchIssueKind = "not_regular_file"
+	issueFileTooLarge       searchIssueKind = "file_too_large"
+	issueLineTooLong        searchIssueKind = "line_too_long"
+	issueReadFailed         searchIssueKind = "read_failed"
+	issueVerificationFailed searchIssueKind = "verification_failed"
+)
+
+type searchIssue struct {
+	Path           string
+	Kind           searchIssueKind
+	Err            error
+	InfiniteAmount bool
+}
+
+const maxIssueTextsPerKind = 3
+
+type issueCollector struct {
+	kept   []searchIssue
+	counts map[searchIssueKind]int
+}
+
+func newIssueCollector() *issueCollector {
+	return &issueCollector{counts: map[searchIssueKind]int{}}
+}
+
+func (c *issueCollector) add(issue *searchIssue) {
+	c.counts[issue.Kind]++
+	if issue.InfiniteAmount {
+		c.kept = append(c.kept, *issue)
+		return
+	}
+
+	if c.counts[issue.Kind] <= maxIssueTextsPerKind {
+		c.kept = append(c.kept, *issue)
+	}
+}
+
+func (c *issueCollector) Error() string {
+	return searchIssueToolResultResponse(c)
+}
+
+var _ error = (*issueCollector)(nil)
 
 type TextMatch struct {
 	Path          string
@@ -27,69 +75,88 @@ func (w *Workspace) searchTextFile(
 	ctx context.Context,
 	input string,
 	query string,
-) ([]TextMatch, bool, error) {
+) ([]TextMatch, bool, *searchIssue) {
 	if err := ctx.Err(); err != nil {
-		return nil, false, err
+		// 取消或超时导致该文件没有被搜索，按未完整扫描处理，错误由 SearchText 统一返回。
+		return nil, true, nil
 	}
 
 	if err := validateSearchQuery(query); err != nil {
-		return nil, false, err
+		return nil, false, &searchIssue{
+			Path: input,
+			Kind: issueVerificationFailed,
+			Err:  err,
+		}
 	}
 
 	toolPath, err := validateToolPath(input)
 	if err != nil {
-		return nil, false, fmt.Errorf(
-			"%q未通过验证, 因为: %w",
-			input,
-			err,
-		)
+		return nil, false, &searchIssue{
+			Path: input,
+			Kind: issueVerificationFailed,
+			Err:  err,
+		}
 	}
 
 	if !isAllowedTextFile(toolPath) {
-		return nil, false, fmt.Errorf(
-			"%q 未通过验证, 因为: %w",
-			toolPath,
-			ErrUnsupportedFileType,
-		)
+		return nil, false, &searchIssue{
+			Path: toolPath,
+			Kind: issueVerificationFailed,
+			Err:  ErrUnsupportedFileType,
+		}
 	}
 
 	localPath, err := localizeToolPath(toolPath)
 	if err != nil {
-		return nil, false, err
+		return nil, false, &searchIssue{
+			Path: toolPath,
+			Kind: issueReadFailed,
+			Err:  err,
+		}
 	}
 
 	if err := w.rejectSymlinkPath(localPath); err != nil {
-		return nil, false, err
+		return nil, false, &searchIssue{
+			Path: toolPath,
+			Kind: issueReadFailed,
+			Err:  err,
+		}
 	}
 
 	file, err := w.root.Open(localPath)
 	if err != nil {
-		return nil, false, fmt.Errorf(
-			"打开 %q 失败, 因为: %w",
-			toolPath,
-			err,
-		)
+		return nil, false, &searchIssue{
+			Path: toolPath,
+			Kind: issueOpenFailed,
+			Err:  err,
+		}
 	}
 	defer file.Close()
 
 	info, err := file.Stat()
 	if err != nil {
-		return nil, false, fmt.Errorf(
-			"获取 %q 信息失败, 因为: %w",
-			toolPath,
-			err,
-		)
+		return nil, false, &searchIssue{
+			Path: toolPath,
+			Kind: issueReadFailed,
+			Err:  err,
+		}
 	}
 
 	if !info.Mode().IsRegular() {
-		return nil, false, fmt.Errorf(
-			"%q 不是普通文件",
-			toolPath,
-		)
+		return nil, false, &searchIssue{
+			Path: toolPath,
+			Kind: issueNotRegular,
+			Err:  nil,
+		}
 	}
 
 	if info.Size() > maxSearchFileBytes {
-		return []TextMatch{}, true, nil
+		return []TextMatch{}, true, &searchIssue{
+			Path:           toolPath,
+			Kind:           issueFileTooLarge,
+			Err:            nil,
+			InfiniteAmount: true,
+		}
 	}
 
 	scanner := bufio.NewScanner(file)
@@ -104,7 +171,8 @@ func (w *Workspace) searchTextFile(
 
 	for scanner.Scan() {
 		if err := ctx.Err(); err != nil {
-			return nil, false, err
+			// 同上：已收集的命中照常返回，剩余内容不再扫描。
+			return matches, true, nil
 		}
 
 		lineNumber++
@@ -132,11 +200,15 @@ func (w *Workspace) searchTextFile(
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, false, fmt.Errorf(
-			"scan text file %q: %w",
-			toolPath,
-			err,
-		)
+		kind := issueReadFailed
+		if errors.Is(err, bufio.ErrTooLong) {
+			kind = issueLineTooLong
+		}
+		return matches, true, &searchIssue{
+			Path: toolPath,
+			Kind: kind,
+			Err:  err,
+		}
 	}
 
 	return matches, false, nil
@@ -148,15 +220,16 @@ type searchFileJob struct {
 }
 
 type searchFileResult struct {
-	Index     int
-	Matches   []TextMatch
-	Truncated bool
-	Err       error
+	Index       int
+	Matches     []TextMatch
+	Truncated   bool
+	SearchIssue *searchIssue
 }
 
 type TextSearchResult struct {
-	Matches   []TextMatch
-	Truncated bool
+	Matches                []TextMatch
+	SearchTruncated        bool
+	CandidateListTruncated bool
 }
 
 const (
@@ -250,17 +323,17 @@ func (w *Workspace) searchTextWorker(
 				return
 			}
 
-			matches, truncated, err := w.searchTextFile(
+			matches, truncated, searchIssue := w.searchTextFile(
 				ctx,
 				job.Path,
 				query,
 			)
 
 			result := searchFileResult{
-				Index:     job.Index,
-				Matches:   matches,
-				Truncated: truncated,
-				Err:       err,
+				Index:       job.Index,
+				Matches:     matches,
+				Truncated:   truncated,
+				SearchIssue: searchIssue,
 			}
 
 			select {
@@ -276,28 +349,28 @@ func (w *Workspace) searchTextWorker(
 func (w *Workspace) SearchText(
 	ctx context.Context,
 	query string,
-) (TextSearchResult, error) {
-	result := TextSearchResult{
+) (*TextSearchResult, error) {
+	result := &TextSearchResult{
 		Matches: make([]TextMatch, 0),
 	}
 
 	if err := ctx.Err(); err != nil {
-		return TextSearchResult{}, err
+		return nil, err
 	}
 
 	if err := validateSearchQuery(query); err != nil {
-		return TextSearchResult{}, err
+		return nil, err
 	}
 
 	fileList, err := w.ListTextFiles(ctx)
 	if err != nil {
-		return TextSearchResult{}, fmt.Errorf(
-			"获取工作区可搜索文件列表失败, 因为: %w",
+		return nil, fmt.Errorf(
+			"通过使用 list_text_files 底层实现获取工作区可搜索文件列表失败, 原因: %w",
 			err,
 		)
 	}
 
-	result.Truncated = fileList.truncated
+	result.CandidateListTruncated = fileList.truncated
 
 	if len(fileList.paths) == 0 {
 		return result, nil
@@ -353,40 +426,25 @@ func (w *Workspace) SearchText(
 		len(fileList.paths),
 	)
 
-	var firstError error
+	issueCollector := newIssueCollector()
 	for fileResult := range results {
-		if fileResult.Err != nil {
-			if firstError == nil {
-				firstError = fileResult.Err
-				cancel()
-			}
+		if fileResult.Truncated {
+			result.SearchTruncated = true
+		}
 
-			continue
+		if fileResult.SearchIssue != nil {
+			issueCollector.add(fileResult.SearchIssue)
 		}
 
 		fileResults[fileResult.Index] = fileResult
 	}
 
-	if firstError != nil {
-		return TextSearchResult{}, fmt.Errorf(
-			"搜索工作区文本失败, 因为: %w",
-			firstError,
-		)
-	}
-
-	if err := ctx.Err(); err != nil {
-		return TextSearchResult{}, err
-	}
-
+collectMatches:
 	for _, fileResult := range fileResults {
-		if fileResult.Truncated {
-			result.Truncated = true
-		}
-
 		for _, match := range fileResult.Matches {
 			if len(result.Matches) >= maxSearchMatches {
-				result.Truncated = true
-				return result, nil
+				result.SearchTruncated = true
+				break collectMatches
 			}
 
 			result.Matches = append(
@@ -394,6 +452,15 @@ func (w *Workspace) SearchText(
 				match,
 			)
 		}
+	}
+
+	if err := ctx.Err(); err != nil {
+		result.SearchTruncated = true
+		return result, err
+	}
+
+	if len(issueCollector.kept) != 0 {
+		return result, issueCollector
 	}
 
 	return result, nil

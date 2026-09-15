@@ -38,13 +38,15 @@ func (r *RuneTooLongError) Error() string {
 	)
 }
 
+// 写入上限使用十进制口径: 1 GB = 1_000_000_000 字节。
+// 码点上限取同一数值: 任何内容的码点数都不会超过它的字节数,
+// 因此这道码点上限不会比字节上限更早生效, 保留它只为维持原有的两道检查结构。
 const (
-	maxWriteRunes = 10_000
-	maxWriteBytes = 40_000
+	maxWriteRunes = 1_000_000_000
+	maxWriteBytes = 1_000_000_000
 )
 
 func validateTextFileContent(content string) error {
-
 	if strings.TrimSpace(content) == "" {
 		return ErrContentEmpty
 	}
@@ -156,7 +158,7 @@ func (w *Workspace) createTemporaryTextFile(
 
 func (w *Workspace) replaceTextFile(
 	localPath string,
-	content []byte,
+	content string,
 	perm os.FileMode,
 ) error {
 	file, tempPath, err := w.createTemporaryTextFile(localPath, perm)
@@ -179,7 +181,7 @@ func (w *Workspace) replaceTextFile(
 		}
 	}()
 
-	if _, err := file.Write(content); err != nil {
+	if _, err := file.WriteString(content); err != nil {
 		return fmt.Errorf(
 			"写入临时文件 %q 失败, 原因: %w",
 			tempPath,
@@ -247,24 +249,31 @@ func (w *Workspace) validateTextFileWrite(
 	return toolPath, nil
 }
 
+// writeTextFileResult 是 write_text_file_tool 需要渲染的结果:
+// written 为 true 表示内容已写入目标, 为 false 表示狰和拒绝、未进行任何更改。
+type writeTextFileResult struct {
+	toolPath string
+	written  bool
+}
+
 func (w *Workspace) WriteTextFile(
 	input string,
 	content string,
-) error {
+) (*writeTextFileResult, error) {
 	toolPath, err := w.validateTextFileWrite(input, content)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	localPath, err := localizeToolPath(toolPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	parentDir := filepath.Dir(localPath)
 	if parentDir != "." {
 		if err := w.root.MkdirAll(parentDir, 0o755); err != nil {
-			return fmt.Errorf(
+			return nil, fmt.Errorf(
 				"创建父级目录 %q 失败, 因为: %w",
 				parentDir,
 				err,
@@ -272,18 +281,25 @@ func (w *Workspace) WriteTextFile(
 		}
 
 		if err := w.rejectSymlinkPath(parentDir); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	perm, err := w.inspectWriteTarget(localPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return w.replaceTextFile(
+	if err := w.replaceTextFile(
 		localPath,
-		[]byte(content),
+		content,
 		perm,
-	)
+	); err != nil {
+		return nil, err
+	}
+
+	return &writeTextFileResult{
+		toolPath: toolPath,
+		written:  true,
+	}, nil
 }
