@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/tool"
 )
 
 // ListTextFilesTool 列出受控工作区中的可读取文本文件。

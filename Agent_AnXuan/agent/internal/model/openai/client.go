@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/model"
 )
 
 // 客户端结构体

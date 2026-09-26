@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/tool"
 )
 
 // ReadTextFileTool 读取受控工作区中的指定文本文件。

@@ -10,13 +10,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/agent"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/analyse"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/config"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model/openai"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/terminal"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/tool"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/workspace"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/agent"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/analyse"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/config"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/model/openai"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/terminal"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/workspace"
 )
 
 func main() {

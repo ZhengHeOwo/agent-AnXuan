@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/model"
 )
 
 type Tool interface {

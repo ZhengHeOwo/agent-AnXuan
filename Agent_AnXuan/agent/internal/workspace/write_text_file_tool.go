@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model"
-	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/tool"
 )
 
 // WriteTextFileTool 经狰和确认后，在受控工作区中创建或覆盖文本文件。
