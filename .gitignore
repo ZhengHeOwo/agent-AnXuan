@@ -1,0 +1,12 @@
+**/.env
+**/.env.*
+
+!**/.env.example
+
+**/Agent_AnXuan/local/data/*
+
+**/Agent_AnXuan/local/prompts/*
+
+**/Collaborator_Workspace/*
+
+!**/Collaborator_Workspace/Synchronous_presentation_file.example
