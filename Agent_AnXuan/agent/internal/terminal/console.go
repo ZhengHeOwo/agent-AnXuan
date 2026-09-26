@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/tool"
 )
 
 // Console 统一管理命令行程序的文本输入和输出。

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model"
 )
 
 func toModelResponse(response chatCompletionResponse) (model.Response, error) {

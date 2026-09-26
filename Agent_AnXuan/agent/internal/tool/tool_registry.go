@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model"
 )
 
 // ToolRegistry 保存工具实现，并提供工具定义列表和名称查找能力。

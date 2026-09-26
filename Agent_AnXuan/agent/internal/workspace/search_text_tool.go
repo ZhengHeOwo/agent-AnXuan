@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model"
-	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent_an_xuan/agent/internal/tool"
 )
 
 type SearchTextTool struct {
@@ -47,7 +47,7 @@ func (t *SearchTextTool) Definition() model.ToolDefinition {
 			"\n" +
 			"第二行是单独的 \"搜索结果:\",其后每一行是一条匹配,形如:\n" +
 			"\n" +
-			"路径: \"Agent-AnXuan/go.mod\" | 行: 3 | 文本是否被截断: false | 文本: module github.com/ZhengHeOwo/agent-AnXuan\n" +
+			"路径: \"Agent-AnXuan/go.mod\" | 行: 3 | 文本是否被截断: false | 文本: module github.com/ZhengHeOwo/agent_an_xuan\n" +
 			"\n" +
 			"没有匹配时匹配条数为 0,不再输出 搜索结果 行,也不会有任何匹配行。\n" +
 			"摘要中三个值的口径。候选列表是否被截断表示候选文件列表本身不完整,与 list_text_files 的截断同源,即遍历到的条目(含目录和符号链接)超过 2000 个,或已列出的文件达到 1500 个;此时有一部分文件根本没有被搜索过,缺少的是遍历顺序靠后的部分。\n" +
