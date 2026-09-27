@@ -49,7 +49,7 @@ func LoadConfig() (Config, error) {
 	modelEndpoint := envOrDefault("LLM_API_URL", defaultEndpoint)
 	modelTimeoutText := envOrDefault("REQUEST_TIMEOUT", defaultTimeout)
 
-	dataPrompt, err := os.ReadFile("./local/prompts/mainModelPrompt.md")
+	dataPrompt, err := os.ReadFile("./Agent_AnXuan/local/prompts/mainModelPrompt.md")
 	if err != nil {
 		return Config{}, fmt.Errorf(
 			"read file got analy_model_prompyt failed: %w",

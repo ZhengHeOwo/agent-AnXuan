@@ -35,7 +35,7 @@ func NewAnalyseRuntime(
 		return nil, fmt.Errorf("ModelName must not be empty")
 	}
 
-	dataPrompt, err := os.ReadFile("./local/prompts/analyseModelPrompt.md")
+	dataPrompt, err := os.ReadFile("./Agent_AnXuan/local/prompts/analyseModelPrompt.md")
 	if err != nil {
 		return nil, fmt.Errorf(
 			"read file got analy_model_prompyt failed: %w",

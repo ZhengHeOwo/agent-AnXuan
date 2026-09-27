@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/model"
 	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/tool"
@@ -106,7 +107,7 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 				return "", fmt.Errorf("%w: 工具调用ID为空", ErrInvalidToolCall)
 			}
 
-			toolCtx, cancel := context.WithTimeout(ctx, 300 * time.Second)
+			toolCtx, cancel := context.WithTimeout(ctx, 300*time.Second)
 			defer cancel()
 
 			result := r.executeToolCall(toolCtx, call)

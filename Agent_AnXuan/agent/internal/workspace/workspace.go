@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const DefaultDir = `./AIWorkspace`
+const DefaultDir = `.`
 
 type Workspace struct {
 	root *os.Root
