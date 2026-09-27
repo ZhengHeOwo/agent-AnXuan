@@ -5,6 +5,9 @@
 当前各工具绑定"当前所在目录", 逻辑位于: Agent_AnXuan/agent/internal/workspace/workspace.go, 详情:"const DefaultDir = `.`".
 正常来说没什么问题, 运行go run时cd到 '你的盘:\agent_an_xuan>' 就行.
 
+## 重要须知:
+如果我的api_key意外泄露了, 请联系 15166143379@163.com 或 he2619522@gmail.com, 请不要默默消耗, 除非你是一个巨大的GAY !!!
+
 ## 运行：
 终端输入: go run Agent_AnXuan/agent/cmd/agent/main.go
 
