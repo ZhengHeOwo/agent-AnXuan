@@ -16,6 +16,7 @@ import (
 	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/model/openai"
 	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/terminal"
 	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/websearch"
 	"github.com/ZhengHeOwo/agent_an_xuan/Agent_AnXuan/agent/internal/workspace"
 )
 
@@ -104,11 +105,17 @@ func run() error {
 		return fmt.Errorf("create search_text tool: %w", err)
 	}
 
+	webSearchTool, err := websearch.NewTool(cfg.WebSearch.BraveAPIKey)
+	if err != nil {
+		return fmt.Errorf("create web_search tool: %w", err)
+	}
+
 	toolsRegistry, err := tool.NewToolRegistry(
 		readTextFileTool,
 		listTextFilesTool,
 		writeTextFileTool,
 		searchTextTool,
+		webSearchTool,
 	)
 
 	if err != nil {

@@ -15,8 +15,9 @@ const (
 )
 
 type Config struct {
-	Model ModelConfig
-	Agent AgentConfig
+	Model     ModelConfig
+	Agent     AgentConfig
+	WebSearch WebSearchConfig
 }
 
 type ModelConfig struct {
@@ -28,6 +29,10 @@ type ModelConfig struct {
 
 type AgentConfig struct {
 	SystemPrompt string
+}
+
+type WebSearchConfig struct {
+	BraveAPIKey string
 }
 
 func envOrDefault(key, defaultValue string) string {
@@ -43,6 +48,11 @@ func LoadConfig() (Config, error) {
 	apiKey := strings.TrimSpace(os.Getenv("AI_API_KEY"))
 	if apiKey == "" {
 		return Config{}, fmt.Errorf("[环境变量] AI_API_KEY 未配置")
+	}
+
+	braveAPIKey := strings.TrimSpace(os.Getenv("BRAVE_API_KEY"))
+	if braveAPIKey == "" {
+		return Config{}, fmt.Errorf("[环境变量] BRAVE_API_KEY 未配置")
 	}
 
 	modelName := envOrDefault("MODEL", defaultModelName)
@@ -76,6 +86,9 @@ func LoadConfig() (Config, error) {
 		},
 		Agent: AgentConfig{
 			SystemPrompt: prompt,
+		},
+		WebSearch: WebSearchConfig{
+			BraveAPIKey: braveAPIKey,
 		},
 	}
 
